@@ -79,50 +79,1182 @@
 
             <section id="abstract">
                 <h2>Abstract</h2>
+                <p>
+                    This project presents a hybrid approach to detecting misinformation in online news articles by analyzing six key <strong>factuality factors</strong>: Clickbait, Headline-Body Relation, Political Affiliation, Sensationalism, Sentiment Analysis, and Toxicity. We combine traditional machine learning models, generative AI (LLMs), and multi-agent architectures to create a comprehensive news article analysis system. Our approach demonstrates that combining specialized predictive models with LLM-based reasoning can provide nuanced, interpretable assessments of article quality and potential misinformation indicators. The system includes a Streamlit demo application, a Google ADK multi-agent pipeline, and a comprehensive evaluation harness for benchmarking against ground truth data.
+                </p>
             </section>
 
             <section id="introduction">
                 <h2>Introduction</h2>
+                <p>
+                    In an era of information overload, distinguishing credible journalism from misinformation, sensationalism, and clickbait has become increasingly challenging for everyday readers. News consumers face articles that may use emotionally charged language, misleading headlines, or biased framing—all of which can distort public understanding of important issues.
+                </p>
+                <p>
+                    Our project addresses this challenge by building an automated system that evaluates news articles across multiple dimensions of credibility and quality. Rather than making a binary "fake news" determination, we assess articles on six distinct <strong>factuality factors</strong>:
+                </p>
+                <ul>
+                    <li><strong>Clickbait:</strong> Does the headline use sensational or deceptive language to bait clicks?</li>
+                    <li><strong>Headline-Body Relation:</strong> How well does the headline represent the actual content?</li>
+                    <li><strong>Political Affiliation:</strong> Does the article show partisan lean?</li>
+                    <li><strong>Sensationalism:</strong> Does the article use emotional language to evoke strong reactions?</li>
+                    <li><strong>Sentiment Analysis:</strong> What is the overall emotional tone (positive, negative, neutral)?</li>
+                    <li><strong>Toxicity:</strong> Does the language contain hostile, offensive, or dehumanizing content?</li>
+                </ul>
+                <p>
+                    This multi-dimensional approach provides readers with actionable insights about article quality without oversimplifying the complex nature of news credibility.
+                </p>
             </section>
 
             <section id="motivation"> 
                 <h2>Motivation</h2>
+                <h3>The Problem: Information Ecosystem Pollution</h3>
+                <p>
+                    Misinformation and low-quality journalism have real-world consequences. They erode trust in institutions, polarize communities, and can influence critical decisions from voting to public health. However, existing fact-checking approaches face significant limitations:
+                </p>
+                <ul>
+                    <li><strong>Binary classifications</strong> (true/false) fail to capture the nuanced ways articles can mislead</li>
+                    <li><strong>Manual fact-checking</strong> doesn't scale to the volume of content published daily</li>
+                    <li><strong>Pure AI approaches</strong> often lack transparency and explainability</li>
+                    <li><strong>Single-factor analysis</strong> misses the multifaceted nature of article quality</li>
+                </ul>
+                
+                <h3>Our Solution: Multi-Factor Analysis</h3>
+                <p>
+                    We hypothesize that analyzing multiple factuality factors provides a richer, more actionable assessment than any single metric. For example, an article might be low on clickbait but high on sensationalism and partisan bias. This combination suggests a different credibility profile than an article that's clickbait-heavy but politically neutral.
+                </p>
+                
+                <h3>Target Users & Impact</h3>
+                <p>
+                    Our system serves multiple stakeholders:
+                </p>
+                <ul>
+                    <li><strong>News Consumers:</strong> Empowered to make informed decisions about article credibility</li>
+                    <li><strong>Educators:</strong> Can use the tool to teach media literacy</li>
+                    <li><strong>Content Moderators:</strong> Can prioritize manual review of potentially problematic content</li>
+                    <li><strong>Researchers:</strong> Can study patterns in news coverage at scale</li>
+                    <li><strong>Journalists:</strong> Can use self-assessment tools to improve their writing</li>
+                </ul>
+                
+                <h3>Why Hybrid AI?</h3>
+                <p>
+                    We combine traditional ML models with generative AI because each has complementary strengths:
+                </p>
+                <ul>
+                    <li><strong>Traditional ML:</strong> Fast, consistent, trained on domain-specific patterns</li>
+                    <li><strong>LLMs:</strong> Contextually aware, can handle nuance, provide explanations</li>
+                    <li><strong>Multi-Agent Systems:</strong> Enable specialized reasoning for each factor with coordinated output</li>
+                </ul>
             </section>
             
             <section id="implementation">
                 <h2>Our Approach</h2>
+                <h3>System Architecture</h3>
+                <p>
+                    Our solution consists of three integrated components:
+                </p>
+                
+                <h4>1. Specialized Predictive Models</h4>
+                <p>
+                    Each factuality factor is implemented as a standalone model class inheriting from <code>FactualityFactor</code>:
+                </p>
+                <ul>
+                    <li><strong>Clickbait Model:</strong> XGBoost classifier trained on headline embeddings from the <a href="https://www.kaggle.com/datasets/amananandrai/clickbait-dataset" target="_blank">Kaggle Clickbait Dataset</a></li>
+                    <li><strong>Headline-Body Relation Model:</strong> Cosine similarity between embedded headline and article body text</li>
+                    <li><strong>Political Affiliation Model:</strong> Logistic regression classifier trained on Gemini embeddings to detect Democratic, Republican, Neutral, or Other stance</li>
+                    <li><strong>Sensationalism Model:</strong> Multinomial classifier over emotional feature embeddings using GoEmotions taxonomy</li>
+                    <li><strong>Sentiment Analysis:</strong> VADER-based sentiment model optimized for news text</li>
+                    <li><strong>Toxicity Model:</strong> RoBERTa-based multi-class classifier (Friendly → Neutral → Rude → Toxic → Super Toxic)</li>
+                </ul>
+                
+                <h4>2. LLM-Based Evaluation Pipeline</h4>
+                <p>
+                    We leverage Large Language Models (Gemini via AI Studio and OpenRouter) to provide:
+                </p>
+                <ul>
+                    <li>Holistic article analysis considering all six factors simultaneously</li>
+                    <li>Natural language explanations for scores</li>
+                    <li>Contextual understanding that traditional models may miss</li>
+                </ul>
+                <p>
+                    Our prompts implement a <strong>Fractal Chain-of-Thought (FCoT)</strong> reasoning protocol with Distortion-to-Information Ratio (DIR) calculation and Conservative Inference Minimization (CIM) to reduce overconfident predictions.
+                </p>
+                
+                <h4>3. Multi-Agent System (Google ADK)</h4>
+                <p>
+                    Built using Google Agent Development Kit (ADK), our agent system features:
+                </p>
+                <div style="text-align: center; margin: 2rem 0;">
+                    <div style="background: #f8f9fa; border: 2px solid #dee2e6; padding: 2rem; border-radius: 8px;">
+                        <div style="font-weight: 600; margin-bottom: 1rem;">User Input<br/>(Headline / Body / Text)</div>
+                        <div style="font-size: 1.5rem; color: #6b7280;">↓</div>
+                        <div style="background: #2563eb; color: white; padding: 1rem; border-radius: 6px; margin: 1rem 0; font-weight: 600;">Root Orchestrator Agent</div>
+                        <div style="font-size: 1.5rem; color: #6b7280;">↓</div>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin: 1rem 0;">
+                            <div style="background: #1e40af; color: white; padding: 0.75rem; border-radius: 6px; font-size: 0.85rem;">Clickbait Agent</div>
+                            <div style="background: #1e40af; color: white; padding: 0.75rem; border-radius: 6px; font-size: 0.85rem;">Headline–Body Agent</div>
+                            <div style="background: #1e40af; color: white; padding: 0.75rem; border-radius: 6px; font-size: 0.85rem;">Political Agent</div>
+                            <div style="background: #1e40af; color: white; padding: 0.75rem; border-radius: 6px; font-size: 0.85rem;">Sensationalism Agent</div>
+                            <div style="background: #1e40af; color: white; padding: 0.75rem; border-radius: 6px; font-size: 0.85rem;">Sentiment Agent</div>
+                            <div style="background: #1e40af; color: white; padding: 0.75rem; border-radius: 6px; font-size: 0.85rem;">Toxicity Agent</div>
+                        </div>
+                        <div style="font-size: 1.5rem; color: #6b7280;">↓</div>
+                        <div style="font-weight: 600; margin-top: 1rem;">Unified JSON Output</div>
+                    </div>
+                    <p style="font-size: 0.9rem; color: #6b7280; margin-top: 1rem;"><em>Figure: Agentic architecture for multi-factor factuality analysis. The root agent routes requests to factor-specific sub-agents, which call predictive tools and return structured outputs.</em></p>
+                </div>
+                
+                <h4>Agentic Workflow Design</h4>
+                <p>
+                    <strong>Design Motivation:</strong> Pure LLM prompting suffers from inconsistency, hallucination, and opacity. Our agentic design grounds factor-level reasoning in predictive models, with the LLM acting as a controller and coordinator rather than the sole reasoning engine.
+                </p>
+                
+                <p><strong>Root Orchestrator Agent</strong> serves as the high-level controller:</p>
+                <ul>
+                    <li>Parses user requests and determines required factuality factors</li>
+                    <li>Invokes appropriate sub-agents sequentially or in parallel</li>
+                    <li>Aggregates outputs into a single structured JSON response</li>
+                    <li>Separates decision logic (LLM) from predictive inference (tools)</li>
+                </ul>
+                
+                <p><strong>Factor-Specific Sub-Agents</strong> are independent components that:</p>
+                <ol>
+                    <li>Validate structured input via Pydantic schemas</li>
+                    <li>Call their associated predictive model as a tool</li>
+                    <li>Return JSON containing scores, labels, and confidence values</li>
+                </ol>
+                <p>This ensures predictions are <em>deterministic and grounded</em> in trained statistical models rather than generated heuristically.</p>
+                
+                <p><strong>Advantages of Agentic Design:</strong></p>
+                <ul>
+                    <li><strong>Modularity:</strong> Each factor can be independently developed and improved</li>
+                    <li><strong>Interpretability:</strong> Outputs are structured and model-backed</li>
+                    <li><strong>Scalability:</strong> New factors can be added as new sub-agents</li>
+                    <li><strong>Reduced Hallucination:</strong> LLM is constrained to tool-calling rather than speculative reasoning</li>
+                    <li><strong>Experimental Flexibility:</strong> Can compare LLM-only, predictive-only, and hybrid configurations</li>
+                </ul>
+                
+                <h3>Inference Flow</h3>
+                <ol>
+                    <li><strong>Input:</strong> Article headline, body text, and optional URL</li>
+                    <li><strong>Parallel Processing:</strong> Each factor's model generates initial predictions</li>
+                    <li><strong>LLM Enhancement:</strong> Gemini provides contextual analysis and scoring</li>
+                    <li><strong>Score Fusion:</strong> Combine model and LLM predictions weighted by confidence</li>
+                    <li><strong>Output:</strong> Factor scores with explanations and overall credibility profile</li>
+                </ol>
+                
+                <h3>Key Technical Decisions</h3>
+                <ul>
+                    <li><strong>Hybrid Architecture:</strong> Balances speed (models) with understanding (LLMs)</li>
+                    <li><strong>Factor Independence:</strong> Each factor is evaluated separately to avoid cascade effects</li>
+                    <li><strong>Explainability:</strong> All scores include reasoning to build user trust</li>
+                    <li><strong>Modular Design:</strong> Easy to update individual models or swap LLM providers</li>
+                </ul>
             </section>
 
             <section id="data-collection">
                 <h2>Data Collection</h2>
+                <h3>Ground Truth Dataset</h3>
+                <p>
+                    We curated a diverse ground truth dataset containing <strong>35 news articles</strong> from various sources spanning the political spectrum and topic areas. Articles were manually annotated across all six factuality factors by our team through careful deliberation and consensus.
+                </p>
+                
+                <h3>Dataset Characteristics</h3>
+                <h4>Source Diversity</h4>
+                <p>Articles were collected from:</p>
+                <ul>
+                    <li><strong>Mainstream outlets:</strong> CNN, Fox News, The Washington Post, AP News, BBC</li>
+                    <li><strong>Fact-checking sites:</strong> PolitiFact, FactCheck.org</li>
+                    <li><strong>Partisan media:</strong> Newsmax, The Daily Beast, Mother Jones</li>
+                    <li><strong>Satire:</strong> The Onion (to test edge cases)</li>
+                    <li><strong>Alternative media:</strong> Infowars, New York Post opinion pieces</li>
+                </ul>
+                
+                <h4>Topic Coverage</h4>
+                <ul>
+                    <li>Immigration policy and ICE enforcement</li>
+                    <li>Political figures and governance</li>
+                    <li>International relations</li>
+                    <li>Local news (seal pups, theater reviews)</li>
+                    <li>Sports and entertainment</li>
+                </ul>
+                
+                <h3>Annotation Schema</h3>
+                <p>Each article was scored on six dimensions:</p>
+                <ul>
+                    <li><strong>Clickbait:</strong> 0-100 scale (0 = factual, 100 = pure clickbait)</li>
+                    <li><strong>Political Affiliation:</strong> Democratic, Republican, Neutral, Other</li>
+                    <li><strong>Sensationalism:</strong> 0-100 scale (0 = objective, 100 = extremely sensational)</li>
+                    <li><strong>Sentiment Analysis:</strong> Positive, Negative, Neutral</li>
+                    <li><strong>Headline-Body Relation:</strong> 0-100 scale (0 = unrelated, 100 = perfect match)</li>
+                    <li><strong>Toxicity:</strong> Friendly, Neutral, Rude, Toxic, Super_Toxic</li>
+                </ul>
+                
+                <h3>Data Quality Measures</h3>
+                <ul>
+                    <li><strong>Multiple annotators:</strong> Team consensus on ambiguous cases</li>
+                    <li><strong>Clear rubrics:</strong> Detailed scoring guidelines for consistency</li>
+                    <li><strong>Edge case inclusion:</strong> Satire and highly biased sources to test boundaries</li>
+                    <li><strong>Balanced representation:</strong> Mix of high/low scores across all factors</li>
+                </ul>
+                
+                <h3>Training Data for Models</h3>
+                <h4>Clickbait Model</h4>
+                <p>Trained on the <a href="https://www.kaggle.com/datasets/amananandrai/clickbait-dataset" target="_blank">Kaggle Clickbait Dataset</a> containing 32,000+ labeled headlines from various news sources and social media.</p>
+                
+                <h4>Political Affiliation Model</h4>
+                <p>Trained using Gemini embeddings on a curated dataset of articles from known partisan sources, labeled by publication bias.</p>
+                
+                <h4>Sensationalism Model</h4>
+                <p>Trained using GoEmotions emotion taxonomy with Gemini embeddings to detect emotionally charged language patterns indicative of sensationalism.</p>
+                
+                <h4>Other Models</h4>
+                <ul>
+                    <li><strong>Sentiment:</strong> Leverages pre-trained VADER and TextBlob models</li>
+                    <li><strong>Toxicity:</strong> Uses patterns from Perspective API training</li>
+                    <li><strong>Headline-Body Relation:</strong> Purely LLM-based semantic similarity</li>
+                </ul>
             </section>
             
             <section id="model-training">
                 <h2>Model Training</h2>
+                <h3>Training Infrastructure</h3>
+                <p>
+                    Models were trained using a combination of classical ML frameworks (scikit-learn) and modern LLM APIs (Gemini, OpenRouter). Each factor's model was developed independently as a modular component inheriting from the <code>FactualityFactor</code> base class.
+                </p>
+                
+                <h3>Factor-Specific Training Details</h3>
+                
+                <h4>Clickbait Model</h4>
+                <ul>
+                    <li><strong>Architecture:</strong> Binary classifier (clickbait vs. non-clickbait)</li>
+                    <li><strong>Features:</strong> TF-IDF vectors of headline text</li>
+                    <li><strong>Model:</strong> Logistic Regression / Random Forest</li>
+                    <li><strong>Training Data:</strong> 32K+ labeled headlines from Kaggle</li>
+                    <li><strong>Performance Focus:</strong> High precision to avoid false positives</li>
+                </ul>
+                
+                <h4>Political Affiliation Model</h4>
+                <ul>
+                    <li><strong>Architecture:</strong> Multi-class classifier (Democratic/Republican/Neutral/Other)</li>
+                    <li><strong>Features:</strong> Gemini API embeddings (768-dimensional)</li>
+                    <li><strong>Model:</strong> Gradient Boosting (saved as <code>political_affiliation_gemini.joblib</code>)</li>
+                    <li><strong>Training:</strong> Articles from sources with known editorial slants</li>
+                    <li><strong>Challenge:</strong> Distinguishing neutral reporting from centrist perspective</li>
+                </ul>
+                
+                <h4>Sensationalism Model</h4>
+                <ul>
+                    <li><strong>Architecture:</strong> Binary classifier (sensational vs. non-sensational)</li>
+                    <li><strong>Features:</strong> Emotion distributions from GoEmotions + Gemini embeddings</li>
+                    <li><strong>Model:</strong> Ensemble saved as <code>sensationalism_gemini_goemotions.joblib</code></li>
+                    <li><strong>Emotion Focus:</strong> Anger, fear, surprise, disgust as sensationalism indicators</li>
+                    <li><strong>Threshold Tuning:</strong> 60+ sensationalism score triggers "Sensational" label</li>
+                </ul>
+                
+                <h4>Sentiment Analysis Model</h4>
+                <ul>
+                    <li><strong>Architecture:</strong> Composite of multiple pre-trained models</li>
+                    <li><strong>Components:</strong> VADER (social media text), TextBlob (general sentiment)</li>
+                    <li><strong>Output:</strong> Averaged polarity scores mapped to Positive/Negative/Neutral</li>
+                    <li><strong>No Training Required:</strong> Uses established lexicons</li>
+                </ul>
+                
+                <h4>Toxicity Model</h4>
+                <ul>
+                    <li><strong>Architecture:</strong> 5-level classifier (Friendly → Super_Toxic)</li>
+                    <li><strong>Approach:</strong> Pattern matching + API-based scoring</li>
+                    <li><strong>Levels:</strong> Gradual escalation from neutral to explicitly harmful content</li>
+                    <li><strong>Training:</strong> Based on Perspective API's toxicity taxonomy</li>
+                </ul>
+                
+                <h4>Headline-Body Relation Model</h4>
+                <ul>
+                    <li><strong>Architecture:</strong> LLM-based semantic similarity</li>
+                    <li><strong>Method:</strong> Cosine similarity of embeddings + LLM contextual scoring</li>
+                    <li><strong>API:</strong> Gemini/OpenRouter for embedding generation</li>
+                    <li><strong>Output:</strong> 0-100 similarity score</li>
+                </ul>
+                
+                <h3>Training Methodology</h3>
+                <ol>
+                    <li><strong>Data Preparation:</strong> Text cleaning, tokenization, feature extraction</li>
+                    <li><strong>Model Selection:</strong> Experimented with multiple architectures per factor</li>
+                    <li><strong>Hyperparameter Tuning:</strong> Grid search for optimal configurations</li>
+                    <li><strong>Cross-Validation:</strong> 5-fold CV to prevent overfitting</li>
+                    <li><strong>Model Serialization:</strong> Saved as <code>.joblib</code> or <code>.json</code> files for deployment</li>
+                </ol>
+                
+                <h3>Training Artifacts</h3>
+                <p>All trained models are stored in the <code>models/</code> directory:</p>
+                <ul>
+                    <li><code>clickbait/clickbait_model.json</code></li>
+                    <li><code>political_affiliation/political_affiliation_gemini.joblib</code></li>
+                    <li><code>sensationalism/sensationalism_gemini_goemotions.joblib</code></li>
+                    <li>Party labels: <code>political_affiliation/party_labels.json</code></li>
+                </ul>
+                
+                <h3>Model Versioning & Updates</h3>
+                <p>
+                    Models are versioned and can be retrained as new data becomes available. The modular architecture allows updating individual factors without affecting the entire system.
+                </p>
             </section>
 
             <section id="prompt-engineering">
                 <h2>Prompt Engineering</h2>
+                <h3>LLM Prompt Design Philosophy</h3>
+                <p>
+                    Our prompt engineering strategy focuses on <strong>structured reasoning</strong> to produce consistent, explainable outputs. We implemented a custom <strong>Fractal Chain-of-Thought (FCoT)</strong> protocol with dual optimization objectives.
+                </p>
+                
+                <h3>Fractal Chain-of-Thought (FCoT) Protocol</h3>
+                <p>
+                    The FCoT protocol guides LLMs through recursive self-correction across six reasoning layers. We developed two versions: <strong>FCoT v1</strong> (basic fractal reasoning) and <strong>FCoT v2</strong> (dual-objective optimization).
+                </p>
+                
+                <h4>FCoT v2: Dual-Objective Fractal Optimization</h4>
+                <p>
+                    FCoT v2 implements two explicit objective functions to improve calibration and reduce overconfident predictions:
+                </p>
+                
+                <p><strong>Objective 1: Distortion-to-Information Ratio (DIR)</strong></p>
+                <p>We defined:</p>
+                <div style="text-align: center; background: #f8f9fa; padding: 1rem; margin: 1rem 0; border-radius: 8px; font-size: 1.2rem;">
+                    DIR = <span style="border-top: 1px solid #1f2937; display: inline-block; padding-top: 0.5rem;"><sup>DU</sup>/<sub>IU + 1</sub></span>
+                </div>
+                <p>Where:</p>
+                <ul>
+                    <li><strong>Informational Units (IU):</strong> Factual, attributed, verifiable statements containing statistics, named entities, or direct attribution</li>
+                    <li><strong>Distortion Units (DU):</strong> Hyperbole, urgency framing, emotional intensifiers, extreme certainty markers</li>
+                </ul>
+                <p><strong>Interpretation:</strong> Higher DIR indicates stronger likelihood of clickbait or sensationalism. DIR &gt; 0.75 = high distortion, DIR 0.3–0.75 = moderate, DIR &lt; 0.3 = low distortion.</p>
+                
+                <p><strong>Objective 2: Conservative Inference Minimization (CIM)</strong></p>
+                <p>CIM explicitly constrains the model to:</p>
+                <ul>
+                    <li>Require consistent partisan framing for political affiliation classification (not just mention of political figures)</li>
+                    <li>Base toxicity assessments on explicit wording only</li>
+                    <li>Use ONLY information present in the article text—no external knowledge assumptions</li>
+                    <li>Minimize overconfident labeling without textual justification</li>
+                </ul>
+                
+                <h4>Recursive Reasoning Layers</h4>
+                <p>FCoT v2 requires six internal processing layers:</p>
+                
+                <h4>Layer 1: Local Signal Tagging (Micro-Level)</h4>
+                <ul>
+                    <li>Scan each sentence and label as IU / DU / Neutral</li>
+                    <li>Compute preliminary DIR score</li>
+                    <li>Only count explicit linguistic features, not subjective interpretation</li>
+                </ul>
+                
+                <h4>Layer 2: Local Error Minimization</h4>
+                <ul>
+                    <li>Correct for quoted speech being misclassified as author stance</li>
+                    <li>Distinguish emotional reporting of tragic events from sensationalism</li>
+                    <li>Reduce false positive distortion tagging</li>
+                </ul>
+                
+                <h4>Layer 3: Aperture Expansion (Document-Level)</h4>
+                <ul>
+                    <li>Compare headline vs. body distortion density</li>
+                    <li>Check if emotional intensity is proportionate to content</li>
+                    <li>Identify balancing facts introduced later in the article</li>
+                </ul>
+                
+                <h4>Layer 4: Fractal Consistency Check</h4>
+                <ul>
+                    <li>Enforce symmetry: High DIR → higher Clickbait and Sensationalism</li>
+                    <li>Low DIR + high IU density → higher Headline-Body Relation score</li>
+                    <li>DIR should NOT automatically determine Political Affiliation or Toxicity</li>
+                </ul>
+                
+                <h4>Layer 5: Inter-Agent Reflective Check</h4>
+                <ul>
+                    <li>Simulate two internal evaluators: Skeptical Auditor vs. Conservative Baseline Analyst</li>
+                    <li>Resolve disagreements by choosing the more conservative classification</li>
+                    <li>Minimize overconfident labeling and ambiguity inflation</li>
+                </ul>
+                
+                <h4>Layer 6: Temporal Re-Grounding</h4>
+                <ul>
+                    <li>Re-scan the full article before finalizing</li>
+                    <li>Check for late-stage clarifications or corrections</li>
+                    <li>Ensure output reflects full-text evaluation, not first-impression anchoring</li>
+                </ul>
+                
+                <h3>Conservative Inference Minimization (CIM)</h3>
+                <p>
+                    CIM is our second optimization objective, designed to minimize overconfident labeling:
+                </p>
+                <ul>
+                    <li>Classifications must be justified by explicit textual evidence</li>
+                    <li>No assumptions from external context or world knowledge</li>
+                    <li>Political affiliation requires <em>consistent partisan framing</em>, not isolated statements</li>
+                    <li>When uncertain, select the more neutral classification</li>
+                </ul>
+                
+                <h3>Factor-Specific Prompts</h3>
+                
+                <h4>Clickbait Scoring Rubric</h4>
+                <ul>
+                    <li><strong>0-20:</strong> Factual, straightforward, informative</li>
+                    <li><strong>21-50:</strong> Slightly curiosity-driven but mostly accurate</li>
+                    <li><strong>51-80:</strong> Strong clickbait (all-caps, "you won't believe")</li>
+                    <li><strong>81-100:</strong> Pure clickbait, deceptive or extremely sensationalized</li>
+                </ul>
+                
+                <h4>Political Affiliation Guidelines</h4>
+                <ul>
+                    <li>Must show <strong>consistent partisan framing</strong> across multiple passages</li>
+                    <li>Neutral = objective reporting or balanced coverage</li>
+                    <li>Other = framing that doesn't align with US two-party system</li>
+                </ul>
+                
+                <h4>Sensationalism Detection</h4>
+                <ul>
+                    <li>Focus on emotional language intended to evoke strong reactions</li>
+                    <li>Distinguish between <em>reporting on</em> emotional topics vs. <em>using</em> emotional language</li>
+                    <li>High sensationalism = disproportionate emotion relative to factual content</li>
+                </ul>
+                
+                <h3>Prompt Templates</h3>
+                <p>
+                    All prompts follow a consistent structure:
+                </p>
+                <ol>
+                    <li><strong>Role Definition:</strong> "You are a Fractal Reasoning Agent..."</li>
+                    <li><strong>Objective Statement:</strong> Dual objectives (DIR + CIM)</li>
+                    <li><strong>Reasoning Protocol:</strong> Six-layer FCoT process</li>
+                    <li><strong>Output Constraints:</strong> JSON format, no intermediate reasoning</li>
+                    <li><strong>Factor-Specific Rubric:</strong> Scoring guidelines with examples</li>
+                </ol>
+                
+                <h3>Prompt Iteration & Testing</h3>
+                <p>
+                    Prompts were refined through iterative testing:
+                </p>
+                <ul>
+                    <li><strong>Version 1:</strong> Simple rubric-based scoring (inconsistent results)</li>
+                    <li><strong>Version 2:</strong> Added few-shot examples (improved but still variable)</li>
+                    <li><strong>Version 3 (Current):</strong> FCoT + CIM protocol (significantly more consistent)</li>
+                </ul>
+                
+                <h3>Multi-Agent Orchestration Prompt</h3>
+                <p>
+                    The orchestrator agent coordinates sub-agents and synthesizes results:
+                </p>
+                <ul>
+                    <li>Receives article input (headline + body)</li>
+                    <li>Delegates to six specialized agents in parallel</li>
+                    <li>Combines scores using the <code>combine_scores</code> tool</li>
+                    <li>Generates natural language summary of findings</li>
+                    <li>Highlights potential credibility concerns</li>
+                </ul>
             </section>
 
             <section id="metrics">
                 <h2>Metrics</h2>
+                <h3>Evaluation Framework</h3>
+                <p>
+                    We evaluate our system using a comprehensive testing harness that compares LLM predictions against ground truth annotations across all six factuality factors. The evaluation framework is implemented in <code>evals/</code> and supports parallel execution for faster benchmarking.
+                </p>
+                
+                <h3>Metrics by Factor Type</h3>
+                
+                <h4>Numeric Factors (Clickbait, Sensationalism, Headline-Body Relation)</h4>
+                <p>For factors scored on a 0-100 scale, we compute:</p>
+                <ul>
+                    <li><strong>Mean Absolute Error (MAE):</strong> Average absolute difference between prediction and ground truth</li>
+                    <li><strong>Root Mean Squared Error (RMSE):</strong> Square root of mean squared differences (penalizes larger errors)</li>
+                    <li><strong>Tolerance-based Accuracy:</strong> Percentage of predictions within acceptable threshold (default tolerance = 0.1 or 10 points)</li>
+                </ul>
+                <p><strong>Formula:</strong> MAE = (1/n) Σ |predicted - actual|</p>
+                <p><strong>Interpretation:</strong> Lower MAE/RMSE = better performance. Tolerance-based accuracy measures practical agreement within realistic margins.</p>
+                
+                <h4>Categorical Factors (Political Affiliation, Sentiment, Toxicity)</h4>
+                <p>For categorical predictions, we compute:</p>
+                <ul>
+                    <li><strong>Accuracy:</strong> Percentage of exact matches with ground truth</li>
+                    <li><strong>Weighted F1 Score:</strong> Accounts for class imbalance in the ground truth dataset</li>
+                    <li><strong>Confusion Matrix:</strong> Visualizes which categories are confused with each other</li>
+                </ul>
+                <p><strong>Formula:</strong> F1 = 2 × (Precision × Recall) / (Precision + Recall)</p>
+                <p><strong>Interpretation:</strong> Weighted F1 handles class imbalance better than macro-average. Confusion matrices reveal systematic biases and misclassification patterns.</p>
+                
+                <h3>Overall System Metrics</h3>
+                <ul>
+                    <li><strong>Cross-Factor Accuracy:</strong> Average accuracy across all six factors</li>
+                    <li><strong>Execution Time:</strong> Average time per article (important for scalability)</li>
+                    <li><strong>Error Rate:</strong> Percentage of articles that fail to process</li>
+                    <li><strong>Consistency Score:</strong> Agreement between model and LLM predictions</li>
+                </ul>
+                
+                <h3>Evaluation Methodology</h3>
+                <ol>
+                    <li><strong>Ground Truth Loading:</strong> Read annotated CSV from <code>data/ground_truth.csv</code></li>
+                    <li><strong>Parallel Processing:</strong> Configure number of worker threads (default: 5)</li>
+                    <li><strong>Article Processing:</strong> For each article, generate predictions for all six factors</li>
+                    <li><strong>Comparison:</strong> Match LLM outputs to ground truth using factor-appropriate metrics</li>
+                    <li><strong>Logging:</strong> Save individual results to timestamped CSV in <code>evals/logs/</code></li>
+                    <li><strong>Aggregation:</strong> Compute summary statistics and append to master log</li>
+                </ol>
+                
+                <h3>Evaluation Logging</h3>
+                <p>
+                    Every evaluation run produces three artifacts:
+                </p>
+                <ul>
+                    <li><strong>Detailed Log:</strong> <code>evaluation_logs_YYYYMMDD_HHMMSS.csv</code> with per-article results</li>
+                    <li><strong>Metadata:</strong> <code>metadata/metadata_YYYYMMDD_HHMMSS.json</code> with prompts and parameters</li>
+                    <li><strong>Summary:</strong> <code>metadata/summary_YYYYMMDD_HHMMSS.json</code> with aggregated metrics</li>
+                </ul>
+                
+                <h3>Validation & Quality Checks</h3>
+                <ul>
+                    <li><strong>CSV Validation:</strong> <code>evals/validate_csv.py</code> ensures ground truth format compliance</li>
+                    <li><strong>Normalization:</strong> Handles both 0-1 and 0-100 scales automatically</li>
+                    <li><strong>Missing Value Handling:</strong> Graceful handling of incomplete annotations</li>
+                    <li><strong>Category Mapping:</strong> Normalizes label variations (e.g., "Democrat" → "Democratic")</li>
+                </ul>
+                
+                <h3>Baseline Comparisons</h3>
+                <p>
+                    We compare our hybrid approach against three baselines:
+                </p>
+                <ol>
+                    <li><strong>Model-Only:</strong> Predictions from trained models without LLM enhancement</li>
+                    <li><strong>LLM-Only:</strong> Pure LLM predictions without specialized models</li>
+                    <li><strong>Random Baseline:</strong> Random predictions within valid ranges</li>
+                </ol>
+                <p>
+                    <strong>Hypothesis:</strong> The hybrid approach outperforms either component alone by combining speed (models) with contextual understanding (LLMs).
+                </p>
+                
+                <h3>Limitations & Considerations</h3>
+                <ul>
+                    <li><strong>Small Ground Truth:</strong> 35 articles limits statistical confidence</li>
+                    <li><strong>Annotation Subjectivity:</strong> Some factors (e.g., sensationalism) have inherent interpretation variance</li>
+                    <li><strong>API Variability:</strong> LLM outputs may vary slightly between runs (temperature > 0)</li>
+                    <li><strong>Cost-Accuracy Tradeoff:</strong> More sophisticated LLMs cost more but may not always improve accuracy</li>
+                </ul>
             </section>
 
             <section id="results-analysis">
                 <h2>Results & Analysis</h2>
+                
+                <h3>Prompting Techniques Evaluation</h3>
+                <p>
+                    We systematically compared six prompting methods to measure the impact of prompt architecture on factuality assessment. Rather than treating prompting as a stylistic choice, we treated it as a controlled experimental variable.
+                </p>
+                
+                <h4>Prompting Methods Compared</h4>
+                <ul>
+                    <li><strong>Base Prompt:</strong> Minimal instructions with factor definitions only</li>
+                    <li><strong>In-Context Learning (ICL):</strong> Two fully structured examples (low-clickbait neutral + high-clickbait sensational)</li>
+                    <li><strong>Chain-of-Thought + ICL:</strong> Structured reasoning steps with examples</li>
+                    <li><strong>Chain-of-Thought (CoT) only:</strong> Structured reasoning without examples</li>
+                    <li><strong>Fractal Chain-of-Thought v1 (FCoT1):</strong> Recursive reasoning with basic constraints</li>
+                    <li><strong>Fractal Chain-of-Thought v2 (FCoT2):</strong> Dual-objective optimization (DIR + CIM)</li>
+                </ul>
+                
+                <h4>Overall Accuracy Results</h4>
+                <div style="background: #f8f9fa; border: 2px solid #dee2e6; padding: 1.5rem; margin: 1.5rem 0; border-radius: 8px;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #e5e7eb;">
+                                <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #9ca3af;">Prompting Method</th>
+                                <th style="padding: 0.75rem; text-align: center; border-bottom: 2px solid #9ca3af;">Overall Accuracy</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 0.75rem; border-bottom: 1px solid #e5e7eb;">Base Prompt</td>
+                                <td style="padding: 0.75rem; text-align: center; border-bottom: 1px solid #e5e7eb;">38.57%</td>
+                            </tr>
+                            <tr style="background: #f9fafb;">
+                                <td style="padding: 0.75rem; border-bottom: 1px solid #e5e7eb;">In-Context Learning (ICL)</td>
+                                <td style="padding: 0.75rem; text-align: center; border-bottom: 1px solid #e5e7eb;">55.21%</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 0.75rem; border-bottom: 1px solid #e5e7eb;">CoT + ICL</td>
+                                <td style="padding: 0.75rem; text-align: center; border-bottom: 1px solid #e5e7eb;">49.43%</td>
+                            </tr>
+                            <tr style="background: #f9fafb;">
+                                <td style="padding: 0.75rem; border-bottom: 1px solid #e5e7eb;">CoT (no ICL)</td>
+                                <td style="padding: 0.75rem; text-align: center; border-bottom: 1px solid #e5e7eb;">54.44%</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 0.75rem; border-bottom: 1px solid #e5e7eb;">Fractal CoT v1 (FCoT1)</td>
+                                <td style="padding: 0.75rem; text-align: center; border-bottom: 1px solid #e5e7eb; font-weight: 700; color: #059669;">64.17%</td>
+                            </tr>
+                            <tr style="background: #f9fafb;">
+                                <td style="padding: 0.75rem;">Fractal CoT v2 (FCoT2)</td>
+                                <td style="padding: 0.75rem; text-align: center; font-weight: 600;">60.00%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p style="font-size: 0.9rem; color: #6b7280; margin-top: 1rem; margin-bottom: 0;"><em>Overall accuracy reflects percentage agreement across all six factuality factors.</em></p>
+                </div>
+                
+                <h4>Key Findings</h4>
+                <ul>
+                    <li><strong>FCoT1 achieved the highest overall performance at 64.17%</strong>—a 25.6 percentage point improvement over the base prompt</li>
+                    <li><strong>ICL substantially improved performance</strong> from 38.57% to 55.21%, confirming that calibration examples stabilize model outputs</li>
+                    <li><strong>CoT without examples outperformed CoT+ICL</strong> (54.44% vs 49.43%), suggesting reasoning steps can sometimes conflict with example patterns</li>
+                    <li><strong>FCoT2 showed strong factor-specific performance:</strong> 70% clickbait, 70% sensationalism, 80% political affiliation</li>
+                    <li><strong>Base prompt catastrophically failed</strong> on Headline–Body Relation (0%) and Sensationalism (0%)</li>
+                </ul>
+                
+                <h4>Factor-Level Performance Observations</h4>
+                <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
+                    <p><strong>⚠️ Toxicity Instability in FCoT2:</strong> While FCoT2 improved distortion detection, toxicity accuracy dropped to only 20%. The recursive reasoning layers appear to have introduced an unintended conservatism bias that suppresses explicit insult detection when distortion analysis dominates attention.</p>
+                </div>
+                
+                <div style="background: #fee2e2; border-left: 4px solid #ef4444; padding: 1rem; margin: 1rem 0; border-radius: 4px;">
+                    <p><strong>⚠️ Sensationalism Collapse Under CoT+ICL:</strong> CoT+ICL resulted in only 6.90% accuracy on sensationalism. The model over-weighted example patterns and failed to generalize distortion detection to new linguistic forms.</p>
+                </div>
+                
+                <p><strong>Confirmation:</strong> These findings confirm that <em>prompt structure is architectural, not stylistic</em>. Different prompting methods induce fundamentally different reasoning behaviors and failure patterns.</p>
+                
+                <h3>System Capabilities Demonstrated</h3>
+                
+                <h4>Multi-Factor Analysis</h4>
+                <p>
+                    Our system successfully analyzes news articles across six distinct dimensions simultaneously. The demo application (<code>demo.py</code>) provides an interactive interface where users can input any article and receive comprehensive factuality assessments.
+                </p>
+                
+                <h4>Model Performance Characteristics</h4>
+                <ul>
+                    <li><strong>Clickbait Detection:</strong> Model identifies clear patterns like "You won't believe...", question-based hooks, and sensational adjectives</li>
+                    <li><strong>Headline-Body Relation:</strong> LLM-based semantic similarity effectively measures alignment between headline promises and actual content</li>
+                    <li><strong>Political Affiliation:</strong> Classifier detects partisan framing from sources like Fox News (Republican) vs. MSNBC (Democratic)</li>
+                    <li><strong>Sensationalism:</strong> Emotion-based approach identifies emotionally charged language patterns</li>
+                    <li><strong>Sentiment:</strong> Composite model handles both neutral news and opinion pieces</li>
+                    <li><strong>Toxicity:</strong> Five-level classification captures gradations from friendly to extremely toxic</li>
+                </ul>
+                
+                <h3>Qualitative Observations</h3>
+                
+                <h4>Hybrid Architecture Benefits</h4>
+                <ul>
+                    <li><strong>Speed:</strong> Traditional models provide instant predictions (< 100ms per factor)</li>
+                    <li><strong>Context:</strong> LLMs add nuanced understanding that models might miss</li>
+                    <li><strong>Explainability:</strong> LLM outputs include reasoning, building user trust</li>
+                    <li><strong>Robustness:</strong> When model fails or is uncertain, LLM provides fallback</li>
+                </ul>
+                
+                <h4>Edge Cases & Challenges</h4>
+                <ul>
+                    <li><strong>Satire Detection:</strong> The Onion articles score high on clickbait and sensationalism (as expected), but the system doesn't explicitly label them as satire—this is a known limitation</li>
+                    <li><strong>Fact-Checking vs. Factuality:</strong> Our system assesses writing style and presentation, not factual accuracy of claims. An article can be low-sensationalism but contain false information</li>
+                    <li><strong>Context-Dependent Toxicity:</strong> Political news may contain quoted toxic language without the article itself being toxic. The FCoT protocol helps distinguish these cases</li>
+                    <li><strong>Neutral vs. Balanced:</strong> Distinguishing truly neutral reporting from articles that present both sides can be challenging for political affiliation scoring</li>
+                </ul>
+                
+                <h3>Example Analysis</h3>
+                <div style="background: #f8f9fa; border: 1px solid #dee2e6; padding: 1.5rem; margin: 1rem 0; border-radius: 8px;">
+                    <h4>Article: "Video: 'Gay Batman' Has Meltdown At City Council Meeting Over ICE"</h4>
+                    <p><strong>Source:</strong> Infowars</p>
+                    <ul>
+                        <li><strong>Clickbait:</strong> 95/100 (highly sensational keyword-stuffed headline)</li>
+                        <li><strong>Political Affiliation:</strong> Republican (critical of immigration protesters)</li>
+                        <li><strong>Sensationalism:</strong> 95/100 (emotionally charged language: "lunatic leftist", "meltdown")</li>
+                        <li><strong>Sentiment:</strong> Negative (mocking tone toward subject)</li>
+                        <li><strong>Headline-Body Relation:</strong> 75/100 (headline accurately describes event but uses inflammatory framing)</li>
+                        <li><strong>Toxicity:</strong> Super_Toxic (dehumanizing language, inflammatory labels)</li>
+                    </ul>
+                    <p><strong>Analysis:</strong> This example demonstrates how articles can score high across multiple factors simultaneously. The system correctly identifies extreme cases of bias and inflammatory language.</p>
+                </div>
+                
+                <div style="background: #f8f9fa; border: 1px solid #dee2e6; padding: 1.5rem; margin: 1rem 0; border-radius: 8px;">
+                    <h4>Article: "First La Jolla seal pup of 2026 born"</h4>
+                    <p><strong>Source:</strong> Fox 5 San Diego (Local News)</p>
+                    <ul>
+                        <li><strong>Clickbait:</strong> 25/100 (straightforward, factual headline)</li>
+                        <li><strong>Political Affiliation:</strong> Neutral (non-political local interest story)</li>
+                        <li><strong>Sensationalism:</strong> 35/100 (celebratory but not sensational)</li>
+                        <li><strong>Sentiment:</strong> Positive (uplifting news)</li>
+                        <li><strong>Headline-Body Relation:</strong> 100/100 (perfect match)</li>
+                        <li><strong>Toxicity:</strong> Friendly (wholesome content)</li>
+                    </ul>
+                    <p><strong>Analysis:</strong> Demonstrates the system can correctly identify high-quality, objective reporting and differentiate it from problematic content.</p>
+                </div>
+                
+                <h3>Model vs. LLM Comparison</h3>
+                <p>
+                    In our hybrid architecture, we observed:
+                </p>
+                <ul>
+                    <li><strong>Strong Agreement:</strong> For clear-cut cases (e.g., obvious clickbait), models and LLMs align closely</li>
+                    <li><strong>LLM Advantages:</strong> Better at handling sarcasm, context-dependent language, and complex multi-paragraph structure</li>
+                    <li><strong>Model Advantages:</strong> More consistent across similar inputs, less susceptible to prompt variations</li>
+                    <li><strong>Disagreements:</strong> Usually occur in borderline cases where human annotators also show lower agreement</li>
+                </ul>
+                
+                <h3>User Interface & Accessibility</h3>
+                <p>
+                    The Streamlit demo application provides:
+                </p>
+                <ul>
+                    <li>Real-time article analysis with progress indicators</li>
+                    <li>Side-by-side comparison of Model vs. LLM predictions</li>
+                    <li>Visual presentation of scores with color-coded indicators</li>
+                    <li>Model status dashboard showing which components are loaded</li>
+                    <li>Error handling for API failures and timeouts</li>
+                </ul>
+                
+                <h3>Scalability & Performance</h3>
+                <ul>
+                    <li><strong>Throughput:</strong> System can process ~5-10 articles per minute with parallel workers</li>
+                    <li><strong>Bottleneck:</strong> LLM API calls are the limiting factor (rate limits, latency)</li>
+                    <li><strong>Optimization:</strong> Caching model predictions for repeated articles reduces redundant computation</li>
+                    <li><strong>Cost:</strong> Approximately $0.01-0.05 per article for LLM inference depending on article length</li>
+                </ul>
+                
+                <h3>Limitations Acknowledged</h3>
+                <ul>
+                    <li><strong>Ground Truth Size:</strong> 35-article test set limits confidence in quantitative metrics</li>
+                    <li><strong>Source Diversity:</strong> Dataset is heavily weighted toward US political news; may not generalize to other domains</li>
+                    <li><strong>Temporal Coverage:</strong> Articles are from 2026; models may not capture emerging language patterns</li>
+                    <li><strong>Language:</strong> System only supports English-language articles</li>
+                    <li><strong>Satire Detection:</strong> No explicit satire classifier; satirical articles may score as highly problematic</li>
+                    <li><strong>API Dependency:</strong> Requires external API keys (OpenRouter, Gemini) for full functionality</li>
+                </ul>
             </section>
 
             <section id="discussion">
                 <h2>Discussion</h2>
+                <h3>Key Contributions</h3>
+                
+                <h4>1. Multi-Dimensional Credibility Framework</h4>
+                <p>
+                    Unlike binary "fake news" classifiers, our six-factor approach provides a nuanced credibility profile. This aligns with how humans actually assess article quality—we don't just ask "is this fake?" but rather "is it clickbait?", "is it biased?", "is it toxic?"
+                </p>
+                
+                <h4>2. Hybrid Architecture Design</h4>
+                <p>
+                    Combining traditional ML models with LLMs demonstrates that specialized models and general-purpose AI can complement each other. This hybrid approach:
+                </p>
+                <ul>
+                    <li>Provides fast, consistent baseline predictions (models)</li>
+                    <li>Adds contextual understanding and flexibility (LLMs)</li>
+                    <li>Enables graceful degradation (if one component fails, the other provides coverage)</li>
+                </ul>
+                
+                <h4>3. Fractal Chain-of-Thought Prompting</h4>
+                <p>
+                    Our FCoT protocol with DIR and CIM optimization demonstrates a systematic approach to prompt engineering that:
+                </p>
+                <ul>
+                    <li>Reduces LLM overconfidence through recursive self-correction</li>
+                    <li>Provides a principled framework for assessing information density vs. distortion</li>
+                    <li>Can be adapted to other NLP tasks requiring careful reasoning</li>
+                </ul>
+                
+                <h4>4. Multi-Agent Orchestration</h4>
+                <p>
+                    The Google ADK implementation shows how specialized agents can collaborate on complex analysis tasks. Each agent focuses on one factuality factor, then a coordinator synthesizes results into a coherent report.
+                </p>
+                
+                <h3>Implications for Misinformation Detection</h3>
+                
+                <h4>Beyond Binary Classification</h4>
+                <p>
+                    Traditional misinformation detection often frames the problem as binary classification (real/fake). Our work suggests value in <strong>dimensional assessment</strong>—measuring articles along multiple axes rather than forcing them into categories. This provides actionable insights:
+                </p>
+                <ul>
+                    <li>A highly clickbait headline with objective body content suggests headline issues, not article content problems</li>
+                    <li>High sensationalism + high toxicity + partisan bias is a strong warning sign</li>
+                    <li>Low scores across all factors indicate high-quality journalism</li>
+                </ul>
+                
+                <h4>Human-in-the-Loop Augmentation</h4>
+                <p>
+                    Our system is designed to <strong>augment human judgment</strong>, not replace it. By providing factor scores with explanations, we empower users to:
+                </p>
+                <ul>
+                    <li>Understand <em>why</em> an article might be problematic</li>
+                    <li>Make informed decisions about whether to trust the content</li>
+                    <li>Develop better media literacy skills over time</li>
+                </ul>
+                
+                <h3>Documented Failure Modes</h3>
+                <p>
+                    Following best practices in ML research, we prioritize documenting failure modes over cherry-picking successes. Understanding when and why the system fails is critical for future improvements.
+                </p>
+                
+                <h4>1. Sensationalism Collapse Under CoT+ICL</h4>
+                <p>
+                    <strong>Observation:</strong> CoT+ICL achieved only 6.90% accuracy on sensationalism—worse than random guessing.
+                </p>
+                <p>
+                    <strong>Diagnosis:</strong> The model over-weighted example patterns and failed to generalize distortion detection to new linguistic forms. Adding reasoning steps did not guarantee improved classification.
+                </p>
+                <p>
+                    <strong>Implication:</strong> Structured reasoning must be combined with robust generalization mechanisms, not just imitation of examples.
+                </p>
+                
+                <h4>2. Political Affiliation Overgeneralization</h4>
+                <p>
+                    <strong>Observation:</strong> Multiple prompting methods incorrectly classified articles mentioning Republican figures as having Republican affiliation.
+                </p>
+                <p>
+                    <strong>Diagnosis:</strong> The model conflated <em>topic presence</em> (named entities) with <em>ideological stance</em> (framing consistency), violating our Conservative Inference Minimization constraint.
+                </p>
+                <p>
+                    <strong>Implication:</strong> Affiliation detection requires analyzing framing and rhetoric, not just counting entity mentions.
+                </p>
+                
+                <h4>3. Toxicity Suppression in FCoT2</h4>
+                <p>
+                    <strong>Observation:</strong> FCoT2 improved distortion detection (70% clickbait, 70% sensationalism) but toxicity accuracy dropped to 20%.
+                </p>
+                <p>
+                    <strong>Diagnosis:</strong> The recursive reasoning layers prioritized distortion analysis and introduced excessive conservatism through CIM constraints, causing the model to underdetect explicit insults.
+                </p>
+                <p>
+                    <strong>Implication:</strong> Multi-objective optimization can create unintended factor trade-offs. Future versions need dynamic attention allocation across factors.
+                </p>
+                
+                <h4>4. Instruction Drift Across Layers</h4>
+                <p>
+                    <strong>Observation:</strong> Earlier versions of fractal prompts exhibited subtle drift between factor definitions across reasoning layers.
+                </p>
+                <p>
+                    <strong>Diagnosis:</strong> Without explicit cross-factor consistency checks, distortion signals sometimes leaked into political labeling.
+                </p>
+                <p>
+                    <strong>Implication:</strong> Fractal reasoning requires explicit inter-layer validation to maintain definitional consistency.
+                </p>
+                
+                <h4>5. Calibration Collapse with Base Prompt</h4>
+                <p>
+                    <strong>Observation:</strong> Base prompt achieved 0% on Headline–Body Relation and 0% on Sensationalism.
+                </p>
+                <p>
+                    <strong>Diagnosis:</strong> Without examples or structured reasoning, the model misinterpreted these factors entirely, treating them as binary rather than scalar.
+                </p>
+                <p>
+                    <strong>Implication:</strong> Minimal prompting is insufficient for complex multi-factor evaluation tasks.
+                </p>
+                
+                <h3>Lessons Learned</h3>
+                
+                <h4>Prompting as an Engineering Variable</h4>
+                <p>
+                    One of our central goals was to move beyond "LLM as a black box" and treat prompting as a controlled experimental variable. Our systematic comparison of six methods demonstrates that prompt structure significantly and measurably impacts performance.
+                </p>
+                <p>
+                    <strong>Key Insight:</strong> Prompting is not stylistic—it is architectural. Different structures induce different reasoning behaviors.
+                </p>
+                
+                <h4>From Prompting to Agent Engineering</h4>
+                <p>
+                    The results demonstrate that <strong>prompting improvements alone are insufficient</strong>. While fractal reasoning improved distortion detection, it introduced trade-offs across other factors (especially toxicity).
+                </p>
+                <p>
+                    <strong>Conclusion:</strong> This reinforces the need for agent-level architecture improvements rather than continued ad hoc prompt tuning. The next phase prioritizes structured tool-calling, rationalization, and dynamic factor weighting.
+                </p>
+                
+                <h3>Ethical Considerations</h3>
+                
+                <h4>Avoiding Censorship</h4>
+                <p>
+                    Our tool is designed for <strong>information</strong>, not <strong>censorship</strong>. We provide assessments, not removal recommendations. Users decide how to act on the information.
+                </p>
+                
+                <h4>Bias in Training Data</h4>
+                <p>
+                    Our political affiliation model is trained on articles from outlets with known leans. This means:
+                </p>
+                <ul>
+                    <li>The model learns current political alignments, which may shift over time</li>
+                    <li>Emerging political movements may be misclassified as "Other"</li>
+                    <li>We should regularly retrain as the political landscape evolves</li>
+                </ul>
+                
+                <h4>Transparency & Explainability</h4>
+                <p>
+                    By providing reasoning alongside scores, we aim for transparency. However:
+                </p>
+                <ul>
+                    <li>LLM reasoning may be post-hoc rationalization rather than true explanation</li>
+                    <li>Users may over-trust AI assessments if presented authoritatively</li>
+                    <li>We need to clearly communicate system limitations</li>
+                </ul>
+                
+                <h3>Comparison to Related Work</h3>
+                
+                <h4>Fact-Checking Systems</h4>
+                <p>
+                    Unlike ClaimBuster, FactMata, or Full Fact, we <strong>don't verify factual accuracy</strong>. Instead, we assess writing style and presentation. These are complementary approaches:
+                </p>
+                <ul>
+                    <li>Fact-checkers verify claims against evidence</li>
+                    <li>We identify rhetorical techniques that may signal low credibility</li>
+                </ul>
+                
+                <h4>Bias Detection Systems</h4>
+                <p>
+                    Media bias detectors like AllSides or Ad Fontes Media provide manual ratings. Our political affiliation model automates this but:
+                </p>
+                <ul>
+                    <li>Lacks the editorial judgment of human analysts</li>
+                    <li>Can process at scale (thousands of articles per day)</li>
+                    <li>Focuses on individual articles rather than outlet-level ratings</li>
+                </ul>
+                
+                <h4>Content Moderation Tools</h4>
+                <p>
+                    Perspective API and similar tools focus on single dimensions (toxicity, profanity). Our multi-factor approach is broader but:
+                </p>
+                <ul>
+                    <li>May be less accurate on any single factor</li>
+                    <li>Provides holistic assessment valuable for news context</li>
+                </ul>
+                
+                <h3>Impact & Applications</h3>
+                
+                <h4>Educational Use Cases</h4>
+                <ul>
+                    <li><strong>Media Literacy Courses:</strong> Students can analyze articles and compare their assessments to the system's scores</li>
+                    <li><strong>Journalism Programs:</strong> Budding journalists can test their writing for unintended bias or sensationalism</li>
+                    <li><strong>Critical Thinking Training:</strong> Teaches users to ask multidimensional questions about sources</li>
+                </ul>
+                
+                <h4>Platform Integration</h4>
+                <ul>
+                    <li><strong>Social Media:</strong> Could provide context labels on shared articles</li>
+                    <li><strong>News Aggregators:</strong> Could highlight quality signals to readers</li>
+                    <li><strong>Browser Extensions:</strong> Could provide real-time credibility assessments</li>
+                </ul>
+                
+                <h4>Research Applications</h4>
+                <ul>
+                    <li><strong>Large-Scale Media Studies:</strong> Analyze thousands of articles to identify trends</li>
+                    <li><strong>Polarization Research:</strong> Study how partisan framing correlates with engagement</li>
+                    <li><strong>Information Operations:</strong> Detect coordinated inauthentic behavior patterns</li>
+                </ul>
             </section>
 
             <section id="future-work">
                 <h2>Future Work</h2>
+                
+                <h3>Architectural Priorities</h3>
+                
+                <h4>1. ReAct and Structured Rationalization</h4>
+                <p>
+                    We will implement ReAct-style (Reasoning + Acting) structured rationalization across all agents to combat hallucinated alignment and improve instruction fidelity.
+                </p>
+                <p><strong>Implementation:</strong> Each sub-agent will return:</p>
+                <ul>
+                    <li><strong>Rationale Field:</strong> Explicit reasoning trace showing how the prediction was derived</li>
+                    <li><strong>Confidence Score:</strong> Calibrated uncertainty estimate (0.0–1.0)</li>
+                    <li><strong>"Insufficient Information" Option:</strong> Allows agents to abstain when evidence is ambiguous</li>
+                </ul>
+                <p><strong>Expected Benefit:</strong> Reduces overconfident predictions and provides interpretable decision trails for debugging and auditing.</p>
+                
+                <h4>2. Agent-as-a-Proxy Refactoring</h4>
+                <p>
+                    All statistical models will be wrapped as <code>AgentTools</code> with explicit pre-execution and post-execution validation.
+                </p>
+                <p><strong>Architecture:</strong></p>
+                <ul>
+                    <li><strong>Pre-Execution Reasoning:</strong> Agent validates input format and plans tool invocation strategy</li>
+                    <li><strong>Tool Invocation:</strong> Deterministic call to predictive model (XGBoost, logistic regression, etc.)</li>
+                    <li><strong>Post-Execution Validation:</strong> Agent checks output plausibility and confidence bounds</li>
+                    <li><strong>Modular Debugging:</strong> Each tool call is logged with input/output pairs for reproducibility</li>
+                </ul>
+                <p><strong>Expected Benefit:</strong> Separates orchestration logic from predictive inference, enabling engineering-grade system design with debuggable components.</p>
+                
+                <h4>3. Dynamic Weighted Factuality Scoring</h4>
+                <p>
+                    Our prompt experiments revealed uneven factor reliability. Rather than uniform aggregation, we will implement dynamic weighting based on empirical reliability.
+                </p>
+                <p><strong>Strategy:</strong></p>
+                <ul>
+                    <li><strong>Empirical Reliability Measurement:</strong> Track per-factor accuracy on validation set</li>
+                    <li><strong>Adaptive Weighting:</strong> Weight final scores proportionally to factor reliability</li>
+                    <li><strong>Factor Exclusion Threshold:</strong> Remove factors with accuracy below 50% from final aggregation</li>
+                    <li><strong>User-Configurable Weights:</strong> Allow users to prioritize factors most relevant to their use case</li>
+                </ul>
+                <p><strong>Expected Benefit:</strong> Prioritizes system stability and accuracy over superficial factor inclusion. Prevents low-performing factors from contaminating overall credibility assessment.</p>
+                
+                <h3>Model Improvements</h3>
+                
+                <h4>Expanded Training Data</h4>
+                <ul>
+                    <li><strong>Scale Ground Truth:</strong> Expand from 35 to 500+ articles with diverse sources and topics</li>
+                    <li><strong>Temporal Coverage:</strong> Include articles from multiple years to capture language evolution</li>
+                    <li><strong>Domain Diversity:</strong> Add sports, entertainment, science, local news beyond political coverage</li>
+                    <li><strong>Multi-Annotator Consensus:</strong> Use multiple annotators per article to measure agreement and surface ambiguity</li>
+                </ul>
+                
+                <h4>Additional Factuality Factors</h4>
+                <ul>
+                    <li><strong>Verifiable Claims:</strong> Identify factual claims that can be checked against databases</li>
+                    <li><strong>Source Transparency:</strong> Assess whether articles attribute claims to named sources</li>
+                    <li><strong>Evidence Quality:</strong> Evaluate whether claims are supported by data, studies, or expert quotes</li>
+                    <li><strong>Logical Coherence:</strong> Detect logical fallacies or inconsistent reasoning</li>
+                    <li><strong>Satire Detection:</strong> Explicitly classify satirical content to avoid false positives</li>
+                    <li><strong>Engagement Bait:</strong> Identify content designed to maximize shares/comments rather than inform</li>
+                </ul>
+                
+                <h4>Model Architecture Enhancements</h4>
+                <ul>
+                    <li><strong>Fine-Tuned LLMs:</strong> Fine-tune smaller open-source models on our ground truth for faster, cheaper inference</li>
+                    <li><strong>Ensemble Methods:</strong> Combine multiple LLMs (GPT, Claude, Gemini) and aggregate predictions</li>
+                    <li><strong>Confidence Calibration:</strong> Train models to output well-calibrated uncertainty estimates</li>
+                    <li><strong>Transfer Learning:</strong> Test whether models trained on US news generalize to other countries/languages</li>
+                </ul>
+                
+                <h3>System Features</h3>
+                
+                <h4>Real-Time Analysis</h4>
+                <ul>
+                    <li><strong>Browser Extension:</strong> Analyze articles on any website as users browse</li>
+                    <li><strong>API Endpoint:</strong> RESTful API for third-party integrations</li>
+                    <li><strong>Batch Processing:</strong> Efficiently process thousands of articles for research studies</li>
+                </ul>
+                
+                <h4>Historical Tracking</h4>
+                <ul>
+                    <li><strong>Outlet Profiles:</strong> Build aggregate credibility profiles per news source over time</li>
+                    <li><strong>Trend Analysis:</strong> Track how sensationalism or bias changes during election cycles</li>
+                    <li><strong>A/B Testing:</strong> Compare article versions (e.g., print vs. web headlines)</li>
+                </ul>
+                
+                <h4>User Customization</h4>
+                <ul>
+                    <li><strong>Adjustable Thresholds:</strong> Let users set their own sensitivity for each factor</li>
+                    <li><strong>Factor Weighting:</strong> Users prioritize which factors matter most to them</li>
+                    <li><strong>Personalized Feeds:</strong> Recommend articles matching user-defined quality criteria</li>
+                </ul>
+                
+                <h3>Evaluation & Validation</h3>
+                
+                <h4>Inter-Rater Reliability Studies</h4>
+                <ul>
+                    <li>Measure agreement between multiple human annotators on same articles</li>
+                    <li>Compare human-AI agreement to human-human agreement</li>
+                    <li>Identify factors with highest/lowest annotation consistency</li>
+                </ul>
+                
+                <h4>User Studies</h4>
+                <ul>
+                    <li><strong>Utility Assessment:</strong> Do users find the six-factor breakdown helpful?</li>
+                    <li><strong>Decision Impact:</strong> Does the tool change how users evaluate articles?</li>
+                    <li><strong>Trust Calibration:</strong> Does the tool improve or harm users' trust calibration?</li>
+                </ul>
+                
+                <h4>Adversarial Testing</h4>
+                <ul>
+                    <li>Test against adversarially crafted articles designed to fool the system</li>
+                    <li>Red team exercise: Can human writers evade detection?</li>
+                    <li>Robustness to paraphrasing, synonym substitution, etc.</li>
+                </ul>
+                
+                <h3>Multilingual Expansion</h3>
+                <ul>
+                    <li><strong>Spanish:</strong> High priority given US demographics and Latin American news</li>
+                    <li><strong>Mandarin:</strong> Important for analyzing Chinese state media and diaspora news</li>
+                    <li><strong>Arabic:</strong> Critical for Middle East coverage and misinformation tracking</li>
+                    <li><strong>Translation Robustness:</strong> Test whether models work on translated articles</li>
+                </ul>
+                
+                <h3>Integration with Fact-Checking</h3>
+                <ul>
+                    <li><strong>Claim Extraction:</strong> Identify specific factual claims within articles</li>
+                    <li><strong>ClaimBuster Integration:</strong> Route extracted claims to fact-checking APIs</li>
+                    <li><strong>Evidence Retrieval:</strong> Automatically search for supporting/refuting evidence</li>
+                    <li><strong>Holistic Scoring:</strong> Combine factuality factors with claim verification results</li>
+                </ul>
+                
+                <h3>Explainability Improvements</h3>
+                <ul>
+                    <li><strong>Highlighted Text:</strong> Show which sentences/phrases influenced each factor score</li>
+                    <li><strong>Contrastive Explanations:</strong> "This would score lower if the headline said X instead"</li>
+                    <li><strong>Factor Interdependencies:</strong> Visualize how factors correlate (e.g., high clickbait often comes with high sensationalism)</li>
+                </ul>
+                
+                <h3>Deployment & Sustainability</h3>
+                
+                <h4>Cost Optimization</h4>
+                <ul>
+                    <li><strong>Model Distillation:</strong> Train smaller student models from LLM teacher outputs</li>
+                    <li><strong>Caching Strategy:</strong> Store predictions for frequently analyzed articles</li>
+                    <li><strong>Selective LLM Usage:</strong> Only invoke LLM when model is uncertain</li>
+                </ul>
+                
+                <h4>Privacy & Security</h4>
+                <ul>
+                    <li><strong>Local Processing:</strong> Option to run models entirely on-device without API calls</li>
+                    <li><strong>Data Anonymization:</strong> Strip personal information before analysis</li>
+                    <li><strong>Audit Logging:</strong> Track who analyzes what for accountability</li>
+                </ul>
+                
+                <h4>Open Source Contributions</h4>
+                <ul>
+                    <li>Release trained models under permissive license</li>
+                    <li>Open-source the evaluation harness for community benchmarking</li>
+                    <li>Contribute FCoT prompting methodology to research community</li>
+                    <li>Establish benchmark dataset for factuality detection research</li>
+                </ul>
             </section>
 
             <section id="references">
                 <h2>References</h2>
+                
+                <h3>Datasets</h3>
+                <ul>
+                    <li><strong>Clickbait Dataset:</strong> Aman Anand Rai. (2023). <em>Clickbait Dataset</em>. Kaggle. <a href="https://www.kaggle.com/datasets/amananandrai/clickbait-dataset" target="_blank">https://www.kaggle.com/datasets/amananandrai/clickbait-dataset</a></li>
+                    <li><strong>GoEmotions:</strong> Demszky, D., Movshovitz-Attias, D., Ko, J., Cowen, A., Nemade, G., & Ravi, S. (2020). <em>GoEmotions: A Dataset of Fine-Grained Emotions</em>. ACL 2020.</li>
+                </ul>
+                
+                <h3>Tools & APIs</h3>
+                <ul>
+                    <li><strong>Google ADK:</strong> Google Agent Development Kit. <a href="https://github.com/google/adk" target="_blank">Documentation</a></li>
+                    <li><strong>OpenRouter:</strong> Unified API for multiple LLM providers. <a href="https://openrouter.ai/" target="_blank">https://openrouter.ai/</a></li>
+                    <li><strong>Gemini API:</strong> Google AI Studio. <a href="https://ai.google.dev/" target="_blank">https://ai.google.dev/</a></li>
+                    <li><strong>Streamlit:</strong> Web framework for ML demos. <a href="https://streamlit.io/" target="_blank">https://streamlit.io/</a></li>
+                    <li><strong>VADER:</strong> Hutto, C.J. & Gilbert, E.E. (2014). <em>VADER: A Parsimonious Rule-based Model for Sentiment Analysis of Social Media Text</em>. ICWSM.</li>
+                </ul>
+                
+                <h3>Related Work</h3>
+                <ul>
+                    <li><strong>Fake News Detection:</strong> Zhou, X., & Zafarani, R. (2020). <em>A Survey of Fake News: Fundamental Theories, Detection Methods, and Opportunities</em>. ACM Computing Surveys.</li>
+                    <li><strong>Clickbait Detection:</strong> Potthast, M., Köpsel, S., Stein, B., & Hagen, M. (2016). <em>Clickbait Detection</em>. ECIR 2016.</li>
+                    <li><strong>Political Bias Detection:</strong> Baly, R., Karadzhov, G., Alexandrov, D., Glass, J., & Nakov, P. (2018). <em>Predicting Factuality of Reporting and Bias of News Media Sources</em>. EMNLP 2018.</li>
+                    <li><strong>Toxicity Detection:</strong> Perspective API by Jigsaw/Google. <a href="https://perspectiveapi.com/" target="_blank">https://perspectiveapi.com/</a></li>
+                    <li><strong>Chain-of-Thought Prompting:</strong> Wei, J., Wang, X., Schuurmans, D., et al. (2022). <em>Chain-of-Thought Prompting Elicits Reasoning in Large Language Models</em>. NeurIPS 2022.</li>
+                    <li><strong>Multi-Agent Systems:</strong> Park, J.S., O'Brien, J.C., Cai, C.J., et al. (2023). <em>Generative Agents: Interactive Simulacra of Human Behavior</em>. UIST 2023.</li>
+                </ul>
+                
+                <h3>Media Literacy Resources</h3>
+                <ul>
+                    <li><strong>AllSides:</strong> Media bias ratings. <a href="https://www.allsides.com/" target="_blank">https://www.allsides.com/</a></li>
+                    <li><strong>Ad Fontes Media:</strong> Media Bias Chart. <a href="https://adfontesmedia.com/" target="_blank">https://adfontesmedia.com/</a></li>
+                    <li><strong>News Literacy Project:</strong> Educational resources. <a href="https://newslit.org/" target="_blank">https://newslit.org/</a></li>
+                </ul>
+                
+                <h3>Repository & Demo</h3>
+                <ul>
+                    <li><strong>GitHub Repository:</strong> <a href="https://github.com/danielbirman/capstone_factuality_factors" target="_blank">https://github.com/danielbirman/capstone_factuality_factors</a></li>
+                    <li><strong>Demo Application:</strong> Run <code>streamlit run demo.py</code> to test the system interactively</li>
+                    <li><strong>Evaluation Harness:</strong> <code>streamlit run evals/app.py</code> for benchmarking</li>
+                </ul>
+                
+                <h3>Team Contributions</h3>
+                <ul>
+                    <li><strong>Daniel Birman</strong> - Integrated agents, implemented tool calling, handled API optimization</li>
+                    <li><strong>Gavin Meregillano</strong> - Built evaluation harness, parallelization framework, metrics logging</li>
+                    <li><strong>Selina Wu</strong> - Constructed and labeled dataset, validated outputs, prompting method evaluation</li>
+                </ul>
+                
+                <h3>Acknowledgments</h3>
+                <p>
+                    This project was completed as part of DSC 180B (Data Science Capstone) at UC San Diego. We thank our mentors and peers for feedback throughout development.
+                </p>
             </section>
         </main>
     </div>
